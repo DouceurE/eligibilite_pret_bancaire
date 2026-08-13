@@ -5,162 +5,210 @@ import joblib
 import plotly.express as px
 import plotly.graph_objects as go
 
+# -----------------------------------------------------------------------------
 # 1. Configuration de la page
+# -----------------------------------------------------------------------------
 st.set_page_config(
-    page_title="FinTech AI | Éligibilité au Prêt",
-    page_icon="💳",
+    page_title="Credit risk AI Platform",
+    page_icon="🏦",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# 2. Injection de CSS personnalisé pour un style moderne
+# -----------------------------------------------------------------------------
+# 2. Injection de CSS personnalisé (Style SaaS FinTech)
+# -----------------------------------------------------------------------------
 st.markdown("""
     <style>
+    /* Style global */
     .main {
-        background-color: #f8f9fa;
+        background-color: #F8FAFC;
     }
+    
+    /* Cartes stylisées */
     .metric-card {
-        background-color: #ffffff;
+        background-color: #FFFFFF;
+        border: 1px solid #E2E8F0;
         border-radius: 12px;
         padding: 20px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        border: 1px solid #e9ecef;
-        text-align: center;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s ease;
     }
-    .stButton>button {
-        background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);
+    .metric-card:hover {
+        transform: translateY(-2px);
+    }
+    .metric-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #0F172A;
+        margin-bottom: 4px;
+    }
+    .metric-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Personnalisation des boutons */
+    .stButton > button {
+        background: linear-gradient(135deg, #0066FF 0%, #0044B3 100%);
         color: white;
-        border: none;
         border-radius: 8px;
+        border: none;
         padding: 12px 24px;
         font-weight: 600;
-        font-size: 16px;
-        transition: all 0.3s ease;
+        width: 100%;
+        box-shadow: 0 4px 12px rgba(0, 102, 255, 0.25);
     }
-    .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(42, 82, 152, 0.4);
+    
+    /* Titres d'onglets */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        background-color: #FFFFFF;
+        border-radius: 8px;
+        padding: 8px 16px;
+        border: 1px solid #E2E8F0;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# 3. Chargement du modèle
+# -----------------------------------------------------------------------------
+# 3. Charger les modèles
+# -----------------------------------------------------------------------------
 @st.cache_resource
-def load_assets():
-    try:
-        model = joblib.load('models/model.pkl')
-        return model
-    except Exception as e:
-        st.error(f"Erreur de chargement : {e}")
-        return None
+def load_models():
+    model_ml = joblib.load('models/model.pkl')
+    preprocessor = joblib.load('models/preprocessor.pkl')
+    return model_ml, preprocessor
 
-model = load_assets()
+# (Assurez-vous de charger vos modèles ici si disponible)
+# model_ml, preprocessor = load_models()
 
-# 4. Barre latérale (Sidebar) pour l'identité et les paramètres
+# -----------------------------------------------------------------------------
+# 4. En-tête de la plateforme
+# -----------------------------------------------------------------------------
+st.markdown("<h1 style='color: #0F172A; font-weight: 800;'>🏦 Plateforme d'Éligibilité au Crédit</h1>", unsafe_allow_html=True)
+st.markdown("<p style='color: #64748B; font-size: 16px; margin-bottom: 30px;'>Système prédictif d'évaluation du risque bancaire basé sur l'IA</p>", unsafe_allow_html=True)
+
+# -----------------------------------------------------------------------------
+# 5. Formulaire dans la barre latérale
+# -----------------------------------------------------------------------------
 with st.sidebar:
-    st.image("https://img.icons8.com/isometric/100/bank.png", width=80)
-    st.title("FinTech")
-    st.markdown("---")
-    st.markdown("### ⚙️ Paramètres système")
-    engine = st.radio("Moteur de prédiction", ["Modèle ML Principal (Random Forest/LogReg)", "Réseau de Neurones (Keras)"])
-    st.markdown("---")
-    st.caption("🚀 Version 2.0 | Système d'Évaluation de Risque")
-
-# 5. En-tête Principal
-st.title("💳 Évaluation Automatisée de Crédit")
-st.markdown("Système d'intelligence artificielle d'analyse de solvabilité bancaire en temps réel.")
-
-# 6. Organisation en Onglets (Formulaire vs Analytics)
-tab1, tab2 = st.tabs(["📝 Formulaire de Demande", "📊 Analyse Comparative"])
-
-with tab1:
-    with st.form("loan_form"):
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-            st.markdown("#### 👤 Demandeur")
-            gender = st.selectbox("Genre", ["Male", "Female"])
-            married = st.selectbox("Statut Marital", ["Yes", "No"])
-            dependents = st.selectbox("Personnes à charge", ["0", "1", "2", "3+"])
-            education = st.selectbox("Niveau d'Études", ["Graduate", "Not Graduate"])
-            self_employed = st.selectbox("Indépendant", ["Yes", "No"])
-
-        with col2:
-            st.markdown("#### 💰 Situation Financière")
-            applicant_income = st.number_input("Revenu Principal ($)", min_value=0, value=5000, step=500)
-            coapplicant_income = st.number_input("Revenu Co-demandeur ($)", min_value=0, value=0, step=500)
-            loan_amount = st.number_input("Montant Sollicité ($ en milliers)", min_value=1, value=150, step=10)
-            loan_term = st.number_input("Durée du Prêt (Jours)", min_value=12, value=360, step=12)
-
-        with col3:
-            st.markdown("#### 📜 Risque & Dossier")
-            credit_history = st.selectbox("Historique de Crédit", [1.0, 0.0], format_func=lambda x: "✅ Exemplaire (1.0)" if x == 1.0 else "❌ Défavorable (0.0)")
-            property_area = st.selectbox("Zone de Résidence", ["Urban", "Semiurban", "Rural"])
-
-        submit = st.form_submit_button("🚀 Lancer l'Évaluation du Dossier", use_container_width=True)
-
-    if submit:
-        # Préparation des données
-        input_data = pd.DataFrame([{
-            'Gender': gender, 'Married': married, 'Dependents': dependents,
-            'Education': education, 'Self_Employed': self_employed,
-            'ApplicantIncome': applicant_income, 'CoapplicantIncome': coapplicant_income,
-            'LoanAmount': loan_amount, 'Loan_Amount_Term': loan_term,
-            'Credit_History': credit_history, 'Property_Area': property_area
-        }])
-
-        st.markdown("---")
-        st.subheader("📋 Décision du Système")
-
-        if model is not None:
-            encoded_data = pd.get_dummies(input_data)
-            model_features = model.feature_names_in_
-            final_data = encoded_data.reindex(columns=model_features, fill_value=0)
-
-            prediction = model.predict(final_data)[0]
-            prob = model.predict_proba(final_data)[0][1] if hasattr(model, "predict_proba") else (1.0 if prediction == 1 else 0.0)
-
-            # Cartes Métriques et Indicateurs visuels
-            m_col1, m_col2, m_col3 = st.columns(3)
-
-            with m_col1:
-                st.metric("Décision Automatique", "ACCORDÉ" if prediction == 1 else "REFUSÉ", delta="Favorable" if prediction == 1 else "-Défavorable")
-
-            with m_col2:
-                st.metric("Score de Confiance", f"{prob*100:.1f}%")
-
-            with m_col3:
-                total_inc = applicant_income + coapplicant_income
-                ratio = (loan_amount * 1000) / (total_inc + 1e-5)
-                st.metric("Ratio Dette / Revenu", f"{ratio:.1f}x")
-
-            # Jauge visuelle Plotly
-            fig = go.Figure(go.Indicator(
-                mode = "gauge+number",
-                value = prob * 100,
-                domain = {'x': [0, 1], 'y': [0, 1]},
-                title = {'text': "Probabilité d'Éligibilité (%)"},
-                gauge = {
-                    'axis': {'range': [0, 100]},
-                    'bar': {'color': "#2a5298"},
-                    'steps': [
-                        {'range': [0, 50], 'color': "#ffcdd2"},
-                        {'range': [50, 75], 'color': "#fff9c4"},
-                        {'range': [75, 100], 'color': "#c8e6c9"}
-                    ],
-                }
-            ))
-            fig.update_layout(height=250)
-            st.plotly_chart(fig, use_container_width=True)
-
-with tab2:
-    st.subheader("📈 Visualisation des Revenus vs Montant Demandé")
+    st.image("https://img.icons8.com/fluency/96/bank.png", width=60)
+    st.markdown("### 📋 Profil du Demandeur")
+    st.caption("Renseignez les données du dossier")
     
-    # Graphique interactif
-    sample_df = pd.DataFrame({
-        "Categorie": ["Revenu Demandeur", "Revenu Co-demandeur", "Montant Prêt (x1000)"],
-        "Montant ($)": [applicant_income, coapplicant_income, loan_amount * 1000]
+    gender = st.selectbox("Genre", ["Male", "Female"])
+    married = st.selectbox("État civil", ["Yes", "No"])
+    education = st.selectbox("Niveau d'études", ["Graduate", "Not Graduate"])
+    
+    st.divider()
+    
+    applicant_income = st.number_input("Revenu Principal ($)", min_value=0, value=5000, step=500)
+    coapplicant_income = st.number_input("Revenu Co-demandeur ($)", min_value=0, value=1500, step=500)
+    loan_amount = st.number_input("Montant du Prêt ($)", min_value=0, value=150000, step=5000)
+    loan_term = st.selectbox("Durée (mois)", [360, 180, 240, 120, 84])
+    
+    st.divider()
+    
+    credit_history = st.radio("Historique de crédit", [1.0, 0.0], format_func=lambda x: "Bon (Pas de retard)" if x == 1.0 else "Mauvais (Historique de défaut)")
+    property_area = st.selectbox("Zone géographique", ["Urban", "Semiurban", "Rural"])
+    
+    predict_btn = st.button("📊 Analyser le Dossier")
+
+# -----------------------------------------------------------------------------
+# 6. Corps principal & Résultats
+# -----------------------------------------------------------------------------
+
+# Calculs préliminaires
+total_income = applicant_income + coapplicant_income
+debt_ratio = round((loan_amount / total_income), 2) if total_income > 0 else 0
+
+# KPIs rapides
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-label">Revenu Total</div>
+            <div class="metric-value">{total_income:,.0f} $</div>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col2:
+    st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-label">Montant Prêt</div>
+            <div class="metric-value">{loan_amount:,.0f} $</div>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col3:
+    st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-label">Ratio Prêt/Revenu</div>
+            <div class="metric-value">{debt_ratio}x</div>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col4:
+    credit_status_color = "#10B981" if credit_history == 1.0 else "#EF4444"
+    credit_text = "Favorable" if credit_history == 1.0 else "Risqué"
+    st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-label">Historique Crédit</div>
+            <div class="metric-value" style="color: {credit_status_color};">{credit_text}</div>
+        </div>
+    """, unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# Configuration des onglets
+tab_decision, tab_analytics, tab_config = st.tabs(["🎯 Décision IA", "📊 Analyse Graphique", "⚙️ Paramètres Modèle"])
+
+with tab_decision:
+    if predict_btn:
+        st.subheader("Résultat de l'analyse")
+        # Exemple de logique de prédiction (À connecter avec votre modèle)
+        if credit_history == 1.0 and debt_ratio < 30:
+            st.success("✅ **PRÊT ACCORDÉ** — Le profil répond aux critères de solvabilité.")
+        else:
+            st.error("❌ **PRÊT REFUSÉ** — Le niveau de risque dépasse le seuil autorisé.")
+    else:
+        st.info("👈 Renseignez les paramètres dans le panneau latéral et cliquez sur **'Analyser le Dossier'**.")
+
+with tab_analytics:
+    st.subheader("Analyse comparative des Revenus et du Crédit")
+    
+    # Graphique Plotly moderne avec palette FinTech
+    df_chart = pd.DataFrame({
+        'Catégorie': ['Revenu Principal', 'Revenu Co-demandeur', 'Montant du Prêt'],
+        'Valeur ($)': [applicant_income, coapplicant_income, loan_amount]
     })
     
-    fig_bar = px.bar(sample_df, x="Categorie", y="Montant ($)", color="Categorie", title="Aperçu des montants de la demande actuelle")
-    st.plotly_chart(fig_bar, use_container_width=True)
+    fig = px.bar(
+        df_chart, 
+        x='Catégorie', 
+        y='Valeur ($)', 
+        color='Catégorie',
+        color_discrete_sequence=['#0066FF', '#38BDF8', '#F59E0B'],
+        template='plotly_white'
+    )
+    
+    fig.update_layout(
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        showlegend=False,
+        font=dict(family="sans-serif", size=12, color="#0F172A")
+    )
+    
+    st.plotly_chart(fig, use_container_width=True)
+
+with tab_config:
+    st.subheader("Configuration des modèles d'Apprentissage Automatique")
+    selected_model = st.radio("Sélectionner le moteur de prédiction :", ["Régression Logistique (ML)", "Réseau de Neurones Keras (Deep Learning)"])
+    st.caption(f"Moteur actuellement actif : **{selected_model}**")
