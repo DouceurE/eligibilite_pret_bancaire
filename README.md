@@ -80,7 +80,7 @@ Mise en compétition de deux approches :
 
 L'application est déployée en ligne grâce à Streamlit Community Cloud.
 
-* 🔗 **Lien de la Démo Interactive :** [https://portfoliomareme.vercel.app/](https://portfoliomareme.vercel.app/)
+* 🔗 **Lien de la Démo Interactive :** [https://eligibilitepretbancaire-i9vicddc4rzt2w87df5js5.streamlit.app/](https://eligibilitepretbancaire-i9vicddc4rzt2w87df5js5.streamlit.app/)
 
 ---
 
